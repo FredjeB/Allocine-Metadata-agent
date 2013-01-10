@@ -1,0 +1,8 @@
+[
+  {
+    "id":"title",
+    "label":"Localized Titles",
+    "type":"bool",
+    "default":"false"
+  }
+]

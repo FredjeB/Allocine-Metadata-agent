@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>French</string>
+	<key>CFBundleExecutable</key>
+	<string>AlloCine</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.plexapp.agents.AlloCine</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	<key>PlexAgentAttributionText</key>
+	<string>
+		    &lt;a href=&quot;http://www.allocine.fr/&quot;&gt;Allocine&lt;/a&gt;, licensed under
+		    &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/&quot;&gt;CC-BY&lt;/a&gt;&lt;br/&gt;
+		    Other content from
+		    &lt;a href=&quot;http://en.wikipedia.org/&quot;&gt;Wikipedia&lt;/a&gt;,
+		    licensed under the &lt;a href=&quot;http://www.gnu.org/copyleft/fdl.html&quot;&gt;GFDL&lt;/a&gt;
+		  </string>
+	<key>PlexFrameworkVersion</key>
+	<string>2</string>
+	<key>PlexPluginClass</key>
+	<string>Agent</string>
+	<key>PlexPluginMode</key>
+	<string>AlwaysOn</string>
+</dict>
+</plist>
