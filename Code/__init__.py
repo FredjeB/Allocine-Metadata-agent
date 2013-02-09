@@ -10,10 +10,11 @@ from settings import *
 # param info here: http://code.google.com/apis/ajaxsearch/documentation/reference.html
 #
 GOOGLE_JSON_URL = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&userip=%s&rsz=large&q=%s'
-FREEBASE_URL    = 'http://freebase.plexapp.com'
-FREEBASE_BASE   = 'movies'
-PLEXMOVIE_URL   = 'http://plexmovie.plexapp.com'
-PLEXMOVIE_BASE  = 'movie'
+ALLOCINE_URL = "http://api.allocine.fr/rest/v3/"
+
+TAG_FULL = "Liste complète"
+TAG_PART = "Liste partielle"
+TAG_NONE = "Aucun"
 
 SCORE_THRESHOLD_IGNORE         = 85
 SCORE_THRESHOLD_IGNORE_PENALTY = 100 - SCORE_THRESHOLD_IGNORE
@@ -104,7 +105,7 @@ class PlexMovieAgent(Agent.Movies):
     
     score = 100
     
-    url = "http://api.allocine.fr/rest/v3/search?partner=%s&format=json&filter=movie&q=%s&count=%s" % (PARTNER_CODE, urllib.quote_plus(media.name), 500)
+    url = ALLOCINE_URL + "search?partner=%s&format=json&filter=movie&q=%s&count=%s" % (PARTNER_CODE, urllib.quote_plus(media.name), 500)
     try:
         jsonAlloCine = JSON.ObjectFromURL(url, sleep=0.5)
         Log("Checking on Allocine with url: %s" % url)
@@ -201,7 +202,6 @@ class PlexMovieAgent(Agent.Movies):
                    bestHitScore = score - scorePenalty               
                 
                 # Get the official, localized name.
-#                name, year = get_best_name_and_year(id, lang, imdbName, imdbYear, lockedNameMap)
                 cacheConsulted = True
                 results.Append(MetadataSearchResult(id = id, name  = imdbName, year = int(imdbYear), lang  = lang, score = int(score-scorePenalty)))
                 Log("Append MetadataSearcResult : id=%s, name=%s, year=%s, lang=%s, score=%d" % (id, imdbName, int(imdbYear), lang, int(score - scorePenalty)))
@@ -406,15 +406,17 @@ class PlexMovieAgent(Agent.Movies):
     Log("*** AlloCine *** update")
     Log("*********>>>>>>>>>>>> Allocine <<<<<<<<<<<<***********")
     setAlloCine = True
-    Log("Metadata : %s", metadata)
+    
+    Log("Tagline : %s", Prefs['tagline'])
     
     setTitle = False
     if media and metadata.title is None:
       setTitle = True
-      
+    
     guid = re.findall('([0-9]+)', metadata.guid)[0]
+        
     Log("guid findall : %s, metadata.guid : %s" % (guid, metadata.guid))
-    url = "http://api.allocine.fr/rest/v3/movie?partner=%s&code=%s&profile=large&format=json&filter=movie&striptags=synopsis,synopsisshort"  % (PARTNER_CODE, guid)
+    url = ALLOCINE_URL + "movie?partner=%s&code=%s&profile=large&format=json&filter=movie&striptags=synopsis,synopsisshort"  % (PARTNER_CODE, guid)
     try:
         jsonAlloCine = JSON.ObjectFromURL(url, sleep=0.5)
         if jsonAlloCine.get("movie") != None:
@@ -441,15 +443,32 @@ class PlexMovieAgent(Agent.Movies):
             
             # Tagline
             try:
-                metadata.tagline = ''
-                i = 0
-                for movie_tag in movie.get("tag"):
-                    if i == 0:
-                        metadata.tagline = movie_tag.get("$")
-                        i = 1
-                    else:
-                        metadata.tagline = metadata.tagline + ', ' + movie_tag.get("$")
-            except: pass
+                metadata.tagline = ' '
+                if Prefs['tagline'] == TAG_FULL:
+                    Log("Tagline complète")
+                    i = 0
+                    for movie_tag in movie.get("tag"):
+                        if i == 0:
+                             metadata.tagline = movie_tag.get("$")
+                             i = 1
+                        else:
+                            metadata.tagline = metadata.tagline + ', ' + movie_tag.get("$")
+                elif Prefs['tagline'] == TAG_PART:
+                    Log("tagline partielle")
+                    i = 0
+                    for movie_tag in movie.get("tag"):
+                        Log("Partiel : %d", i)
+                        if i == 0:
+                             metadata.tagline = movie_tag.get("$")
+                        elif i < 4:
+                            metadata.tagline = metadata.tagline + ', ' + movie_tag.get("$")
+                        i += 1
+                else:
+                    Log("Aucune Tagline")
+                Log("Tagline : %s", metadata.tagline)
+            except Exception, err:
+                Log("Tagline Error : %s, line nr : %s", str(err), sys.exc_traceback.tb_lineno)
+                pass
             
             # Genres
             try:
@@ -662,16 +681,10 @@ def parseAlloCineTitle(title, url):
         
     if m:
       # A bit more processing for the name.
-      #result['title'] = cleanupIMDBName(m.groups()[0])
       result['title'] = m.groups()[0]
       result['year'] = int(m.groups()[2])
       
     else:
-      # longTitleRx = '(.*\.\.\.)'
-      # m = re.match(longTitleRx, title)
-      #if m:
-      #  result['title'] = cleanupIMDBName(m.groups(1)[0])
-      #  result['year']  = None
       Log("Quitting ParseAllocineTitle, no ID finded, url :%s" % url)
       return None
 
@@ -687,19 +700,6 @@ def parseAlloCineTitle(title, url):
     
 
  
-def cleanupIMDBName(s):
-  imdbName = re.sub('^[aA][lL][lL][oO][cC][iI][nN][éE][ ]*:[ ]*', '', s)
-  imdbName = re.sub('^details - ', '', imdbName)
-  imdbName = re.sub('(.*:: )+', '', imdbName)
-  imdbName = HTML.ElementFromString(imdbName).text
-
-  if imdbName:
-    if imdbName[0] == '"' and imdbName[-1] == '"':
-      imdbName = imdbName[1:-1]
-    return imdbName
-
-  return None
-
 def safe_unicode(s,encoding='utf-8'):
   if s is None:
     return None
@@ -711,33 +711,3 @@ def safe_unicode(s,encoding='utf-8'):
   else:
     return str(s).decode(encoding)
   
-def get_best_name_and_year(guid, lang, fallback, fallback_year, best_name_map):
-  url = '%s/%s/%s/%s.xml' % (FREEBASE_URL, FREEBASE_BASE, guid[-2:], guid)
-  ret = (fallback, fallback_year)
-  
-  try:
-    movie = XML.ElementFromURL(url, cacheTime=3600)
-    
-    movieEl = movie.xpath('//movie')[0]
-    if movieEl.get('originally_available_at'):
-      fallback_year = int(movieEl.get('originally_available_at').split('-')[0])
-
-    lang_match = False
-    if Prefs['title']:
-      for movie in movie.xpath('//title'):
-        if lang == movie.get('lang'):
-          ret = (movie.get('title'), fallback_year)
-          lang_match = True
-
-    # Default to the English title.
-    if not lang_match:
-      ret = (movieEl.get('title'), fallback_year)
-    
-    # Note that we returned a pristine name.
-    best_name_map['tt'+guid] = True
-    return ret
-      
-  except:
-    Log("Error getting best name.")
-
-  return ret

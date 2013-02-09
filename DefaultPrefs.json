@@ -1,5 +1,12 @@
 [
   {
+      "id": "tagline",
+      "label": "Tagline",
+      "type": "enum",
+      "values": ["Liste complète","Liste partielle","Aucun"],
+     "default": "Liste complète"
+  },
+  {
     "id":"title",
     "label":"Localized Titles",
     "type":"bool",
