@@ -105,7 +105,7 @@ class PlexMovieAgent(Agent.Movies):
     
     score = 100
     
-    url = ALLOCINE_URL + "search?partner=%s&format=json&filter=movie&q=%s&count=%s" % (PARTNER_CODE, urllib.quote_plus(media.name), 500)
+    url = ALLOCINE_URL + "search?format=json&partner=%s&q=%s&filter=movie&profile=large&page=1&count=25" % (PARTNER_CODE, urllib.quote_plus(media.name))
     try:
         jsonAlloCine = JSON.ObjectFromURL(url, sleep=0.5)
         Log("Checking on Allocine with url: %s" % url)
@@ -416,7 +416,7 @@ class PlexMovieAgent(Agent.Movies):
     guid = re.findall('([0-9]+)', metadata.guid)[0]
         
     Log("guid findall : %s, metadata.guid : %s" % (guid, metadata.guid))
-    url = ALLOCINE_URL + "movie?partner=%s&code=%s&profile=large&format=json&filter=movie&striptags=synopsis,synopsisshort"  % (PARTNER_CODE, guid)
+    url = ALLOCINE_URL + "movie?format=json&partner=%s&mediafmt=mp4-lc:m&profile=large&code=%s&striptags=synopsis,synopsisshort" % (PARTNER_CODE, guid)
     try:
         jsonAlloCine = JSON.ObjectFromURL(url, sleep=0.5)
         if jsonAlloCine.get("movie") != None:
