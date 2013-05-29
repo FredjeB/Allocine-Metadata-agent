@@ -11,6 +11,7 @@ from settings import *
 #
 GOOGLE_JSON_URL = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&userip=%s&rsz=large&q=%s'
 ALLOCINE_URL = "http://api.allocine.fr/rest/v3/"
+ALLO_USER_AGENT = "headers={'user-agent' : 'AlloCine/2.9.5 CFNetwork/609.1.4 Darwin/13.0.0'}"
 
 TAG_FULL = "Liste complète"
 TAG_PART = "Liste partielle"
@@ -105,9 +106,9 @@ class PlexMovieAgent(Agent.Movies):
     
     score = 100
     
-    url = ALLOCINE_URL + "search?format=json&partner=%s&q=%s&filter=movie&profile=large&page=1&count=25" % (PARTNER_CODE, urllib.quote_plus(media.name))
+    url = ALLOCINE_URL + "search?format=json&partner=%s&q=%s&filter=movie&profile=large&page=1&count=6" % (PARTNER_CODE, urllib.quote_plus(media.name))
     try:
-        jsonAlloCine = JSON.ObjectFromURL(url, sleep=0.5)
+        jsonAlloCine = JSON.ObjectFromURL(url, headers={'user-agent' : 'AlloCine/2.9.5 CFNetwork/609.1.4 Darwin/13.0.0'}, sleep=0.5) 
         Log("Checking on Allocine with url: %s" % url)
         if jsonAlloCine.get("feed") != None:
             feed = jsonAlloCine.get("feed")
@@ -416,9 +417,9 @@ class PlexMovieAgent(Agent.Movies):
     guid = re.findall('([0-9]+)', metadata.guid)[0]
         
     Log("guid findall : %s, metadata.guid : %s" % (guid, metadata.guid))
-    url = ALLOCINE_URL + "movie?format=json&partner=%s&mediafmt=mp4-lc:m&profile=large&code=%s&striptags=synopsis,synopsisshort" % (PARTNER_CODE, guid)
+    url = ALLOCINE_URL + "movie?format=json&partner=%s&profile=large&code=%s&striptags=synopsis,synopsisshort" % (PARTNER_CODE, guid)
     try:
-        jsonAlloCine = JSON.ObjectFromURL(url, sleep=0.5)
+        jsonAlloCine = JSON.ObjectFromURL(url, headers={'user-agent' : 'AlloCine/2.9.5 CFNetwork/609.1.4 Darwin/13.0.0'}, sleep=0.5) 
         if jsonAlloCine.get("movie") != None:
             movie = jsonAlloCine.get("movie")
             #release = movie.get("release",[])
