@@ -115,16 +115,21 @@ class PlexMovieAgent(Agent.Movies):
             #Log("feed : %s" % feed)
             
             for movie in feed.get("movie"):
-                #Log("Movie feed : %s" % movie)
+                Log("Allocine result")
                 id = str(movie.get("code"))
                 
-                imdbName = ""
-                originalImdbName = ""
+                imdbName = None
+                originalImdbName = None
                 try: originalImdbName = str(safe_unicode(movie.get("originalTitle")))
-                except: pass
+                except: originalImdbName = None
+                
                 
                 try: imdbName = str(safe_unicode(movie.get("title")))
-                except: imdbName = originalImdbName
+                except: imdbName = None
+                
+                if imdbName == "None" or imdbName is None:
+                   imdbName = originalImdbName
+                   
                 
                 try: imdbYear = int(movie.get("productionYear"))
                 except:
@@ -226,6 +231,7 @@ class PlexMovieAgent(Agent.Movies):
     Log("Len(results)=%d, bestHitScore=%d, score_treshold_ignore=%d, manual=%s" % (len(results), bestHitScore, SCORE_THRESHOLD_IGNORE, manual))
     
     if doGoogleSearch:
+      Log("==> Searching on Google")
       # Try to strip diacriticals, but otherwise use the UTF-8.
       normalizedName = String.StripDiacritics(media.name)
       if len(normalizedName) == 0:
@@ -398,10 +404,11 @@ class PlexMovieAgent(Agent.Movies):
       
     # Make sure we're using the closest names.
     for result in results:
-      if not lockedNameMap.has_key(result.id) and bestNameMap.has_key(result.id):
-        Log("id=%s score=%s -> Best name being changed from %s to %s" % (result.id, result.score, result.name, bestNameMap[result.id]))
-        result.name = bestNameMap[result.id]
-        
+       if result.name is None and bestNameMap.has_key(result.id): 
+         Log("id=%s score=%s -> Best name being changed from %s to %s" % (result.id, result.score, result.name, bestNameMap[result.id]))
+         result.name = bestNameMap[result.id]
+       
+         
   def update(self, metadata, media, lang, force):
   
     Log("*** AlloCine *** update")
