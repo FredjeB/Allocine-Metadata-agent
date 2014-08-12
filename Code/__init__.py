@@ -177,7 +177,7 @@ class PlexMovieAgent(Agent.Movies):
                 Log("score penalty (used to determine if google is needed) = %d (score %d)" % (scorePenalty, score))
                 
                 # Perhaps is originalTitle a beter match
-				scorePenaltyOrig = 0
+                scorePenaltyOrig = 0
                 if imdbName != originalImdbName:
                     distance = Util.LevenshteinDistance(media.name, originalImdbName.encode('utf-8'))
                     Log("distance for %s: %s" % (originalImdbName, distance))
